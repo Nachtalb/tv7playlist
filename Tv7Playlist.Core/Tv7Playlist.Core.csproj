@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
-    <RuntimeIdentifiers>linux-x64;linux-arm64;linux-arm;linux-x86</RuntimeIdentifiers>
+    <RuntimeIdentifiers>linux-musl-x64;linux-musl-arm64;linux-musl-arm</RuntimeIdentifiers>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="6.0.0" />

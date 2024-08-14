@@ -1,4 +1,4 @@
-name: Docker
+name: Docker Build and Push
 
 on:
   push:
@@ -35,35 +35,35 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Extract metadata (tags, labels) for Docker
+      - name: Extract metadata for Docker
         id: meta
         uses: docker/metadata-action@v4
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
-          tags: |
-            type=raw,value=latest,enable=${{ github.ref == 'refs/heads/master' }}
-            type=sha,format=short
-            type=ref,event=branch
-            type=ref,event=tag
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v4
         with:
           context: .
+          platforms: linux/amd64,linux/arm/v7,linux/arm64/v8
           push: ${{ github.event_name != 'pull_request' }}
-          platforms: linux/amd64,linux/arm64,linux/arm/v7
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
 
-      - name: Build and push architecture-specific tags
+      - name: Create and push architecture-specific tags
         if: github.event_name != 'pull_request'
         run: |
-          SHORT_SHA=$(echo ${{ github.sha }} | cut -c1-8 | tr '[:upper:]' '[:lower:]')
-          REPO_LOWER=$(echo ${{ env.IMAGE_NAME }} | tr '[:upper:]' '[:lower:]')
-          for arch in amd64 arm64 arm-v7; do
-            docker buildx build --platform linux/${arch//-/\/} \
+          REPO_LOWER=$(echo ${{ github.repository }} | tr '[:upper:]' '[:lower:]')
+          SHORT_SHA=$(echo ${{ github.sha }} | cut -c1-8)
+
+          for arch in amd64 arm32v7 arm64v8; do
+            case $arch in
+              amd64)   platform="linux/amd64" ;;
+              arm32v7) platform="linux/arm/v7" ;;
+              arm64v8) platform="linux/arm64/v8" ;;
+            esac
+
+            docker buildx build --platform $platform \
               -t ${{ env.REGISTRY }}/${REPO_LOWER}:latest-${arch} \
               -t ${{ env.REGISTRY }}/${REPO_LOWER}:${SHORT_SHA}-${arch} \
               --push \
