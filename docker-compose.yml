@@ -1,0 +1,16 @@
+version: "3.8"
+
+services:
+  tv7playlist:
+    image: ghcr.io/nachtalb/tv7playlist:master
+    container_name: tv7playlist
+    ports:
+      - "8011:80"
+    environment:
+      - UdpxyUrl=http://10.0.1.2:4022/udp
+    volumes:
+      - tv7playlist_data:/data
+    restart: unless-stopped
+
+volumes:
+  tv7playlist_data:
